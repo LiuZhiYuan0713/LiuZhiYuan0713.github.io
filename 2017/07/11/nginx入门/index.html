@@ -9,7 +9,7 @@
   <meta name="author" content="John Doe">
   <meta name="baidu-site-verification" content="XDMmm0vhhV" />
   <!-- Open Graph Data -->
-  <meta property="og:title" content="创建文章"/>
+  <meta property="og:title" content="nginx入门"/>
   <meta property="og:description" content="" />
   <meta property="og:site_name" content="刘致远的博客"/>
   <meta property="og:type" content="article" />
@@ -50,12 +50,12 @@
     <!-- Page Header -->
 
 
-<header class="site-header header-background" style="background-image: url(http://lzybloglz.oss-cn-qingdao.aliyuncs.com/photo/wallhaven-260178.jpg)">
+<header class="site-header header-background" style="background-image: url(http://lzybloglz.oss-cn-qingdao.aliyuncs.com/photo/wallhaven-522968.jpg)">
   <div class="container">
     <div class="row">
       <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
         <div class="page-title with-background-image">
-          <p class="title">创建文章</p>
+          <p class="title">nginx入门</p>
           <p class="subtitle"></p>
         </div>
         <div class="site-menu with-background-image">
@@ -112,14 +112,14 @@
           
           <!-- Date -->
           <span class="date-time info">On
-            <span class="date">2017-06-01</span>
+            <span class="date">2017-07-11</span>
             <span class="time">17:36:47</span>
           </span>
           
           <!--  Categories  -->
             <span class="categories info">Under 
 
-<a href="/categories/博客/">博客</a>
+<a href="/categories/Nginx/">Nginx</a>
 </span>
           
         </div>
@@ -128,38 +128,16 @@
           <div class="post-tags text-muted">
             Tags: 
 
-<a class="tag" href="/tags/hexo/">#hexo</a>
+<a class="tag" href="/tags/nginx/">#nginx</a>
 
 
           </div>
         
         <!-- Post Main Content -->
         <div class="post-content">
-          <p>使用npm来创建博客文章<br><a id="more"></a></p>
-<script>
-(function(){
-    var bp = document.createElement('script');
-    var curProtocol = window.location.protocol.split(':')[0];
-    if (curProtocol === 'https') {
-        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
-    }
-    else {
-        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
-    }
-    var s = document.getElementsByTagName("script")[0];
-    s.parentNode.insertBefore(bp, s);
-})();
-</script>
+          <p>Nginx的入门与配置<br><a id="more"></a></p>
+<p>1.安装</p><br><pre><code>brew install nginx<br></code></pre><br><p>Mac配置目录：</p><br><pre><code>/usr/local/etc/nginx/nginx.conf<br></code></pre><br><p>2.常用命令</p><br><pre><code>nginx -s stop<br><br>nginx -s quit  // 安全的停止服务（比如等到当前正在的请求完成后才结束进程）<br><br>nginx -s reload  // 重新加载配置文件<br><br>nginx -s reopen  // 重新打开日志文件<br></code></pre><br><p>注：</p><br><p>nginx -s quit</p><br><blockquote><p>This command should be executed under the same user that started nginx.</p></blockquote><br><p>3.完整配置样本</p><br><pre><code>user www;<br><br>worker_processes 12;<br><br>error_log /var/log/nginx/error.log;<br><br>pid /var/run/nginx.pid;<br><br>events {<br>    use /dev/poll;<br>    worder_connections 2048;<br>}<br><br>http {<br>    include /opt/local/etc/nginx/mime.types;<br>    default_type application/octet-stream;<br>    sendfile on;<br>    tcp_nopush on;<br>    tcp_nodelay on;<br>    keepalive_timeout 65;<br>    server_names_hash_max_size 1024;<br>}<br><br>server {<br>    listen 80;<br>    return 444;<br>}<br><br>server {<br>    listen 80;<br>    server_name www.example.com;<br>    location / {<br>        try_files $uri $uri/ @mongrel;<br>    }<br>    location @mongrel {<br>        proxy_pass <a href="http://127.0.0.1:8080" target="_blank" rel="external">http://127.0.0.1:8080</a>;<br>    }<br>}<br></code></pre><br><p>Nginx是由指令控制的模块组成的，指令分简单指令和块指令。简单指令由name，parameters（通过空格分开）和分号组成。块指令拥有相同的结构，只不过是以{ }结尾。若块指令还包含其他指令，则称为context（例如：events http,server,location）。</p><br><p>4.http模块</p><br><p><em>Serving Static Content</em></p><br><p>web服务器最重要的一项功能就是为静态提供服务。接下来就是做两个实例，实现访问静态html和图片。</p><br><p>在本地新建两个目录：</p><br><pre><code>/data/www<br><br>/data/image<br></code></pre><br><p>分别添加一个index.html和一个test.jpg图片到里面。</p><br><p>打开nginx.conf在http块指令下添加：</p><br><pre><code>server {<br>    listen 1234;//不要和配置里面的其他端口重复，默认80<br><br>    location / {<br>        root /data/www;<br>    }<br><br>    location /image/ {<br>        root /data/image;<br>    }<br>}<br></code></pre><br><p>重新加载配置：</p><br><pre><code>nginx -s reload<br></code></pre><br><p>打开浏览器分别访问：</p><br><p><a href="http://localhost:1234/index.html" target="_blank" rel="external">http://localhost:1234/index.html</a></p><br><p><a href="http://localhost:1234/image/test.jpg" target="_blank" rel="external">http://localhost:1234/image/t…</a></p><br><p>就能看到相应的内容。</p><br><p><em>Setting Up a Simple Proxy Server</em></p><br><p>Nginx另一个经常用到的功能是代理，通俗点就是中转站。</p><br><p>在配置文件里新增一个server:</p><br><pre><code>server {<br>    listen 1200;<br>    location / {<br>        proxy_pass <a href="https://www.baidu.com/" target="_blank" rel="external">https://www.baidu.com/</a>;<br>    }<br>}<br></code></pre><br><p>此时访问：<a href="http://localhost:1200" target="_blank" rel="external">http://localhost:1200</a>，就会看到百度首页。</p>
 
-<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo new <span class="string">"My New Post"</span></div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo server</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo generate</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo deploy</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
 
         </div>
       </div>
@@ -175,7 +153,7 @@
     <div class="row">
       <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
        <!--PC和WAP自适应版-->
-<div id="SOHUCS" sid="创建文章">></div> 
+<div id="SOHUCS" sid="nginx入门">></div> 
 <script type="text/javascript"> 
 (function(){ 
 var appid = 'cyt6cGNhF'; 
