@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+  <!-- Html Head Tag-->
+  <head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="John Doe">
+  <meta name="baidu-site-verification" content="XDMmm0vhhV" />
+  <!-- Open Graph Data -->
+  <meta property="og:title" content="个人博客HTTPS"/>
+  <meta property="og:description" content="" />
+  <meta property="og:site_name" content="刘致远的博客"/>
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="http://yoursite.comundefined"/>
+
+  
+    <link rel="alternate" href="/atom.xml" title="刘致远的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  
+
+  <!-- Site Title -->
+  <title>刘致远的博客</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <!-- Custom CSS -->
+  
+  <link rel="stylesheet" href="/css/style.light.css">
+
+  <!-- Google Analytics -->
+  
+
+</head>
+
+  <body>
+    <!-- Page Header -->
+
+
+<header class="site-header header-background" style="background-image: url(https://lzybloglz.oss-cn-qingdao.aliyuncs.com/photo/wallhaven-49937.jpg)">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="page-title with-background-image">
+          <p class="title">个人博客HTTPS</p>
+          <p class="subtitle"></p>
+        </div>
+        <div class="site-menu with-background-image">
+          <ul>
+            
+              <li>
+                <a href="/">
+                  
+                  Home
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="/archives">
+                  
+                  Archives
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="https://github.com/LiuZhiYuan0713">
+                  
+                  Github
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="mailto:1129529309@qq.com">
+                  
+                  Email
+                  
+                </a>
+              </li>
+            
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<article>
+  <div class="container typo">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-info text-muted">
+          
+            <!-- Author -->
+            <span class="author info">By John Doe</span>
+          
+          <!-- Date -->
+          <span class="date-time info">On
+            <span class="date">2017-07-12</span>
+            <span class="time">15:01:48</span>
+          </span>
+          
+          <!--  Categories  -->
+            <span class="categories info">Under 
+
+<a href="/categories/博客/">博客</a>
+</span>
+          
+        </div>
+        <!-- Tags -->
+        
+          <div class="post-tags text-muted">
+            Tags: 
+
+<a class="tag" href="/tags/虚拟主机/">#虚拟主机</a> <a class="tag" href="/tags/阿里云/">#阿里云</a> <a class="tag" href="/tags/HTTPS/">#HTTPS</a> <a class="tag" href="/tags/SSL/">#SSL</a> <a class="tag" href="/tags/CDN/">#CDN</a>
+
+
+          </div>
+        
+        <!-- Post Main Content -->
+        <div class="post-content">
+          <p>基于阿里云云虚拟主机,我个人网站是基于Hexo博客系统搭建的静态网站,所以搭建Https相对方便<br><a id="more"></a></p>
+<h1 id="一获取https安全证书">一、获取HTTPS安全证书</h1>
+
+<p><strong><em>在操作之前，请将你的域名的隐私保护去掉，让证书服务商能通过域名解析查看到域名管理者的邮箱，否则验证证书时会无法进行。</em></strong></p>
+
+<p>登录阿里云管理控制台，【云盾】菜单选择【证书服务】 <br><br><img src="http://img.blog.csdn.net/20160905181257378" alt="这里写图片描述" title=""></p>
+
+<p>选择购买证书 <br><br><img src="http://img.blog.csdn.net/20160905181417723" alt="这里写图片描述" title=""></p>
+
+<p>在购买页面，选择WoSign,沃通，免费版，多个域名，域名个数5个，1年。</p>
+
+<blockquote><br>  <p><strong>目前沃通停了免费的证书服务，只有赛门铁克支持，大家按着沃通的方式来做吧，赛门铁克的流程我就不贴了。</strong> <br><br>  一帮商人！其实对于一个小网站来说，阿里应该跟腾讯一样，来个免费的证书服务，而不是通过接入第三方把这个小钱赚了</p><br></blockquote>
+
+<p><img src="http://img.blog.csdn.net/20160905181443504" alt="这里写图片描述" title=""></p>
+
+<p>确认订单，支付， <br><br><img src="http://img.blog.csdn.net/20160905181726962" alt="这里写图片描述" title=""></p>
+
+<p><img src="http://img.blog.csdn.net/20160905181758396" alt="这里写图片描述" title=""></p>
+
+<p>付款完成后，到我的订单里，可以看到刚刚买的服务，点击【信息补全】按钮，将你的网站地址输入，一般输入一个不带www.的和一个带www.的两个域名。 <br><br><img src="http://img.blog.csdn.net/20160905181816978" alt="这里写图片描述" title=""> <br><br><img src="http://img.blog.csdn.net/20160905182721944" alt="这里写图片描述" title=""></p>
+
+<p>如果你进入的是详情页就到你邮箱中看看阿里云给你发的邮件（邮箱是阿里云注册时用的邮箱） <br><br><img src="http://img.blog.csdn.net/20160905182012621" alt="这里写图片描述" title=""></p>
+
+<p>如果直接进入沃通网站进行信息补全就是这个界面：选择【验证域名所有权（待完成）】 <br><br><img src="http://img.blog.csdn.net/20160905182256554" alt="这里写图片描述" title=""></p>
+
+<p>需要发送邮件到邮箱获取验证码，我的主机在购买时，送了我一个企业邮箱，所以就直接用域名对应的邮箱了，如果你没有域名邮箱，建议将域名保护关闭，然后再验证。当然，你还可以通过域名解析的方式处理。 <br><br><img src="http://img.blog.csdn.net/20160905182801120" alt="这里写图片描述" title=""></p>
+
+<p>如果能通过邮件获取验证码，基本上，当时就可以下发证书。回到阿里云证书服务，可以看到订单状态。在我的证书标签页，如果看到申请的证书，就说明可以使用了。 <br><br><img src="http://img.blog.csdn.net/20160905184244668" alt="这里写图片描述" title=""></p>
+
+<p>对于已签发的证书，我们就可以下载，下载后解压得到两个文件，一个key结尾，是私钥，一个pem结尾，是公钥。 <br><br><img src="http://img.blog.csdn.net/20160905194338952" alt="这里写图片描述" title=""></p>
+
+<h1 id="二配置https证书">二、配置HTTPS证书 </h1>
+
+<p>到阿里云管理控制台【CDN】的【CDN域名列表中】，添加一个新的域名，选择图片小文件加速，类型IP，然后将阿里云虚拟主机的IP输入。端口一定选择80，不要选择443 <br><br><img src="http://img.blog.csdn.net/20160905193749585" alt="这里写图片描述" title=""></p>
+
+<p>添加完成后，我们进行管理，开启证书状态，将刚才的pem结尾的公钥用文本编辑器打开，拷贝内容，粘贴到【证书内容】中。将私钥拷贝，粘贴到私钥中。 <br><br><strong>注意</strong>：公钥的内容中<code>—–END CERTIFICATE—–</code>和<code>—–BEGIN CERTIFICATE—–</code>之间是有空行的，需要将空行去掉  </p>
+
+
+
+<pre class="prettyprint"><code class=" hljs r"><span class="hljs-keyword">...</span>
+-----END CERTIFICATE-----
+
+-----BEGIN CERTIFICATE-----
+<span class="hljs-keyword">...</span></code></pre>
+
+<p>改成</p>
+
+
+
+<pre class="prettyprint"><code class=" hljs r"><span class="hljs-keyword">...</span>
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+<span class="hljs-keyword">...</span></code></pre>
+
+<p>另外需要将跳转类型设置为<code>HTTP-&gt;HTTPS</code> <br><br><img src="http://img.blog.csdn.net/20160905194858218" alt="这里写图片描述" title=""></p>
+
+<p>另外需要记住CNAME: <br><br><code>CNAME: www.aitongyi.com.w.cab.com</code></p>
+
+<p>因为下一步我们需要到域名管理控制台去修改网站的域名绑定信息。</p>
+
+<p>CDN的基本信息配置完成后，我们需要解析缓存配置，就是告诉CDN，缓存那些内容。 <br><br>如果是阿里的免费虚拟主机，除了将html、css、js、png、jpg、ico等文件缓存外，一般会将整个css或者js目录缓存，因为有的js文件未来便于处理，都是用<code>.jsv1.0.0</code>来做结尾，避免js文件更新后无法获取最新版本。 <br><br>由于我是Hexo生成的静态网站，所以可以将整个网站目录进行缓存。 <br><br><img src="http://img.blog.csdn.net/20160905200440259" alt="这里写图片描述" title=""></p>
+
+
+
+<h1 id="三域名绑定">三、域名绑定</h1>
+
+<p>在阿里云管理控制台中【域名】的【域名列表】点击域名的【管理】按钮，进入域名管理控制台。将原来的记录类型【A】，主机记录为<code>www</code>的解析修改一个为CNAME记录类型，将记录值修改为刚才的<code>www.aitongyi.com.w.cab.com</code>这个地址，保存即可。 <br><br><img src="http://img.blog.csdn.net/20160905195440767" alt="这里写图片描述" title=""></p>
+
+<p>下一步我就就是在浏览器中输入：<code>www.aitongyi.com</code>,网站就会自动跳转到<code><a href="https://www.aitongyi.com/" target="_blank" rel="external">https://www.aitongyi.com/</a></code> 大功告成！</p>
+
+<p>如果你的网站没有跳转到https或者网站请求没有反应，请等待10分钟左右，一般是设置没有及时生效导致的。</p>
+
+<p><img src="http://img.blog.csdn.net/20160905202055515" alt="这里写图片描述" title=""></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</article>
+
+
+
+    <!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+       <!--PC和WAP自适应版-->
+<div id="SOHUCS" sid="个人博客HTTPS">></div> 
+<script type="text/javascript"> 
+(function(){ 
+var appid = 'cyt6cGNhF'; 
+var conf = '74187cfd376140c9ac8040b651377990'; 
+var width = window.innerWidth || document.documentElement.clientWidth; 
+if (width < 960) { 
+window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+        <p class="copyright text-muted">
+          Theme By <a target="_blank" href="https://github.com/levblanc">Levblanc.</a>
+          Inspired By <a target="_blank" href="https://github.com/klugjo/hexo-theme-clean-blog">Clean Blog.</a>
+        <p class="copyright text-muted">
+          Powered By <a target="_blank" href="https://hexo.io/">Hexo.</a>
+        </p>
+		    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+        <span id="busuanzi_container_site_uv">本站访客数<span id="busuanzi_value_site_uv"></span>人次</span>
+        <span id="busuanzi_container_page_pv">本文总阅读量<span id="busuanzi_value_page_pv"></span>次</span>
+        <p class="copyright text-muted">
+        <a target="_blank" href="http://www.miitbeian.gov.cn/">工信部备案号：陇ICP备17003422号</a>
+        </p>
+        <script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<a href="http://webscan.360.cn/index/checkwebsite/url/www.lzybloglz.cn" name="8fbeeff16bd9824b29e2757827e06098" >360网站安全检测平台</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+    <!-- After Footer Scripts -->
+<script src="/js/highlight.pack.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function(event) {
+    var codeBlocks = Array.prototype.slice.call(document.getElementsByTagName('pre'))
+    codeBlocks.forEach(function(block, index) {
+      hljs.highlightBlock(block);
+    });
+  });
+</script>
+
+  </body>
+</html>
+
