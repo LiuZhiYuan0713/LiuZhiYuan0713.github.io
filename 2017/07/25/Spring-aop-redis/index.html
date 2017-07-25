@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+  <!-- Html Head Tag-->
+  <head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="John Doe">
+  <meta name="baidu-site-verification" content="XDMmm0vhhV" />
+  <!-- Open Graph Data -->
+  <meta property="og:title" content="Spring AOP + Redis缓存数据库查询"/>
+  <meta property="og:description" content="" />
+  <meta property="og:site_name" content="刘致远的博客"/>
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="http://yoursite.comundefined"/>
+
+  
+    <link rel="alternate" href="/atom.xml" title="刘致远的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  
+
+  <!-- Site Title -->
+  <title>刘致远的博客</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <!-- Custom CSS -->
+  
+  <link rel="stylesheet" href="/css/style.light.css">
+
+  <!-- Google Analytics -->
+  
+
+</head>
+
+  <body>
+    <!-- Page Header -->
+
+
+<header class="site-header header-background" style="background-image: url(https://lzybloglz.oss-cn-qingdao.aliyuncs.com/photo/ce74a8237c796e7de87237b550264e42_r.jpg)">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="page-title with-background-image">
+          <p class="title">Spring AOP + Redis缓存数据库查询</p>
+          <p class="subtitle"></p>
+        </div>
+        <div class="site-menu with-background-image">
+          <ul>
+            
+              <li>
+                <a href="/">
+                  
+                  Home
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="/archives">
+                  
+                  Archives
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="https://github.com/LiuZhiYuan0713">
+                  
+                  Github
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="mailto:1129529309@qq.com">
+                  
+                  Email
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="https://wpa.qq.com/msgrd?v=3&uin=1129529309&site=qq&menu=yes">
+                  
+                  QQ
+                  
+                </a>
+              </li>
+            
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<article>
+  <div class="container typo">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-info text-muted">
+          
+            <!-- Author -->
+            <span class="author info">By John Doe</span>
+          
+          <!-- Date -->
+          <span class="date-time info">On
+            <span class="date">2017-07-25</span>
+            <span class="time">10:10:12</span>
+          </span>
+          
+          <!--  Categories  -->
+            <span class="categories info">Under 
+
+<a href="/categories/Redis/">Redis</a>
+</span>
+          
+        </div>
+        <!-- Tags -->
+        
+          <div class="post-tags text-muted">
+            Tags: 
+
+<a class="tag" href="/tags/spring-aop/">#spring aop</a> <a class="tag" href="/tags/redis/">#redis</a>
+
+
+          </div>
+        
+        <!-- Post Main Content -->
+        <div class="post-content">
+          <p>将数据库查询结果缓存到Redis中，这样在第二次做同样的查询时便可以直接从redis取结果，从而减少数据库读写次数。<br><a id="more"></a></p>
+<h2 id="需要解决的问题">需要解决的问题</h2>
+
+<ol><br><li>操作缓存的代码写在哪？必须要做到与业务逻辑代码完全分离。</li><br><li>如何避免脏读？ 从缓存中读出的数据必须与数据库中的数据一致。</li><br><li>如何为一个数据库查询结果生成一个唯一的标识？即通过该标识(Redis中为<code>Key</code>)，能唯一确定一个查询结果，同一个查询结果，一定能映射到同一个<code>key</code>。只有这样才能保证缓存内容的正确性</li><br><li>如何序列化查询结果？查询结果可能是单个实体对象，也可能是一个<code>List</code>。</li><br></ol>
+
+
+
+<h2 id="解决方案">解决方案</h2>
+
+
+
+<h3 id="避免脏读">避免脏读</h3>
+
+<p>我们缓存了查询结果，那么一旦数据库中的数据发生变化，缓存的结果就不可用了。为了实现这一保证，可以在执行相关表的更新查询(<code>update</code>, <code>delete</code>, <code>insert</code>)查询前，让相关的缓存过期。这样下一次查询时程序就会重新从数据库中读取新数据缓存到redis中。那么问题来了，在执行一条<code>insert</code>前我怎么知道应该让哪些缓存过期呢？对于Redis，我们可以使用<code>Hash Set</code>数据结构，让一张表对应一个<code>Hash Set</code>，所有在这张表上的查询都保存到该Set下。这样当表数据发生变动时，直接让Set过期即可。我们可以自定义一个注解，在数据库查询方法上通过注解的属性注明这个操作与哪些表相关，这样在执行过期操作时，就能直接从注解中得知应该让哪些Set过期了。</p>
+
+
+
+<h3 id="为查询生成唯一标识">为查询生成唯一标识</h3>
+
+<p>对于<code>MyBatis</code>，我们可以直接使用<code>SQL</code>字符串做为<code>key</code>。但是这样就必须编写基于<code>MyBatis</code>的拦截器，从而使你的缓存代码与<code>MyBatis</code>紧紧耦合在一起。如果哪天更换了持久层的框架，你的缓存代码就白写了，所以这个方案并不完美。 <br><br>仔细想一想，其实如果两次查询调用的类名、方法名和参数值相同，我们就可以确定这两次查询结果一定是相同的（在数据没有变动的前提下）。因此，我们可以将这三个元素组合成一个字符串做为key, 就解决了标识问题。</p>
+
+
+
+<h3 id="序列化查询结果">序列化查询结果</h3>
+
+<p>最方便的序列化方式就是使用JDK自带的<code>ObjectOutputStream</code>和<code>ObjectInputStream</code>。优点是几乎任何一个对象，只要实现了<code>Serializable</code>接口，都用<strong>同一套代码</strong>能被序列化和反序列化。但缺点也很致命，那就是序列化的结果容量偏大，在redis中会消耗大量内存（是对应JSON格式的3倍左右）。那么我们只剩下JSON这一个选择了。 <br><br>JSON的优点是结构紧凑，可读性强，但美中不足的是，反序列化对象时必须提供具体的类型参数(<code>Class</code>对象)，如果是<code>List</code>对象，还必须提供<code>List</code>和List中的元素类型两种信息，才能被正确反序列化。这样就增加了代码的复杂度。不过这些困难都是可以克服的，所以我们还是选择JSON作为序列化存储方式。</p>
+
+
+
+<h3 id="代码写在哪">代码写在哪</h3>
+
+<p>毫无疑问，该<code>AOP</code>上场了。在我们的例子中，持久化框架使用的是<code>MyBatis</code>，因此我们的任务就是拦截<code>Mapper</code>接口方法的调用，通过<code>Around(环绕通知)</code>编写以下逻辑：</p>
+
+<ol><br><li>方法被调用之前，根据类名、方法名和参数值生成<code>Key</code></li><br><li>通过<code>Key</code>向<code>Redis</code>发起查询</li><br><li>如果缓存命中，则将缓存结果反序列化作为方法调用的返回值 ，并阻止被代理方法的调用。</li><br><li>如果缓存未命中，则执行代理方法，得到查询结果，序列化，用当前的<code>Key</code>将序列化结果放入redis中。</li><br></ol>
+
+
+
+<h2 id="代码实现">代码实现</h2>
+
+<p>因为我们要拦截的是<code>Mapper</code>接口方法，因此必须命令spring使用JDK的动态代理而不是<code>cglib</code>的代理。为此，我们需要做以下配置：</p>
+
+
+
+<pre class="prettyprint"><code class=" hljs xml"><span class="hljs-comment">&lt;!-- 当proxy-target-class为false时使用JDK动态代理 --&gt;</span>
+<span class="hljs-comment">&lt;!-- 为true时使用cglib --&gt;</span>
+<span class="hljs-comment">&lt;!-- cglib无法拦截接口方法 --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">aop:aspectj-autoproxy</span> <span class="hljs-attribute">proxy-target-class</span>=<span class="hljs-value">"false"</span> /&gt;</span></code></pre>
+
+<p>然后定义两个标注在接口方法上的注解，用于传递类型参数：</p>
+
+
+
+<pre class="prettyprint"><code class=" hljs java"><span class="hljs-annotation">@Retention</span>(RetentionPolicy.RUNTIME)
+<span class="hljs-annotation">@Target</span>(ElementType.METHOD)
+<span class="hljs-annotation">@Documented</span>
+<span class="hljs-keyword">public</span> @<span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">RedisCache</span> {</span>
+    Class type();
+}</code></pre>
+
+
+
+<pre class="prettyprint"><code class=" hljs java"><span class="hljs-annotation">@Retention</span>(RetentionPolicy.RUNTIME)
+<span class="hljs-annotation">@Target</span>(ElementType.METHOD)
+<span class="hljs-keyword">public</span> @<span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">RedisEvict</span> {</span>
+    Class type();
+}</code></pre>
+
+<p>注解的使用方式如下：</p>
+
+
+
+<pre class="prettyprint"><code class=" hljs fsharp"><span class="hljs-comment">// 表示该方法需要执行 (缓存是否命中 ? 返回缓存并阻止方法调用 : 执行方法并缓存结果)的缓存逻辑</span>
+@RedisCache(<span class="hljs-class"><span class="hljs-keyword">type</span> =</span> JobPostModel.<span class="hljs-keyword">class</span>)
+JobPostModel selectByPrimaryKey(Integer id);</code></pre>
+
+
+
+<pre class="prettyprint"><code class=" hljs rust"><span class="hljs-comment">// 表示该方法需要执行清除缓存逻辑</span>
+@RedisEvict(<span class="hljs-keyword">type</span> = JobPostModel.class)
+<span class="hljs-keyword">int</span> deleteByPrimaryKey(Integer id);</code></pre>
+
+<p>AOP的代码如下:</p>
+
+
+
+<pre class="prettyprint"><code class=" hljs java"><span class="hljs-annotation">@Aspect</span>
+<span class="hljs-annotation">@Component</span>
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">RedisCacheAspect</span> {</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> Logger infoLog = LogUtils.getInfoLogger();
+
+    <span class="hljs-annotation">@Qualifier</span>(<span class="hljs-string">"redisTemplateForString"</span>)
+    <span class="hljs-annotation">@Autowired</span>
+    StringRedisTemplate rt;
+
+
+    <span class="hljs-javadoc">/**
+     * 方法调用前，先查询缓存。如果存在缓存，则返回缓存数据，阻止方法调用;
+     * 如果没有缓存，则调用业务方法，然后将结果放到缓存中
+     *<span class="hljs-javadoctag"> @param</span> jp
+     *<span class="hljs-javadoctag"> @return</span>
+     *<span class="hljs-javadoctag"> @throws</span> Throwable
+     */</span>
+    <span class="hljs-annotation">@Around</span>(<span class="hljs-string">"execution(* com.fh.taolijie.dao.mapper.JobPostModelMapper.select*(..))"</span> +
+            <span class="hljs-string">"|| execution(* com.fh.taolijie.dao.mapper.JobPostModelMapper.get*(..))"</span> +
+            <span class="hljs-string">"|| execution(* com.fh.taolijie.dao.mapper.JobPostModelMapper.find*(..))"</span> +
+            <span class="hljs-string">"|| execution(* com.fh.taolijie.dao.mapper.JobPostModelMapper.search*(..))"</span>)
+    <span class="hljs-keyword">public</span> Object <span class="hljs-title">cache</span>(ProceedingJoinPoint jp) <span class="hljs-keyword">throws</span> Throwable {
+        <span class="hljs-comment">// 得到类名、方法名和参数</span>
+        String clazzName = jp.getTarget().getClass().getName();
+        String methodName = jp.getSignature().getName();
+        Object[] args = jp.getArgs();
+
+        <span class="hljs-comment">// 根据类名，方法名和参数生成key</span>
+        String key = genKey(clazzName, methodName, args);
+        <span class="hljs-keyword">if</span> (infoLog.isDebugEnabled()) {
+            infoLog.debug(<span class="hljs-string">"生成key:{}"</span>, key);
+        }
+
+        <span class="hljs-comment">// 得到被代理的方法</span>
+        Method me = ((MethodSignature) jp.getSignature()).getMethod();
+        <span class="hljs-comment">// 得到被代理的方法上的注解</span>
+        Class modelType = me.getAnnotation(RedisCache.class).type();
+
+        <span class="hljs-comment">// 检查redis中是否有缓存</span>
+        String value = (String)rt.opsForHash().get(modelType.getName(), key);
+
+        <span class="hljs-comment">// result是方法的最终返回结果</span>
+        Object result = <span class="hljs-keyword">null</span>;
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">null</span> == value) {
+            <span class="hljs-comment">// 缓存未命中</span>
+            <span class="hljs-keyword">if</span> (infoLog.isDebugEnabled()) {
+                infoLog.debug(<span class="hljs-string">"缓存未命中"</span>);
+            }
+
+            <span class="hljs-comment">// 调用数据库查询方法</span>
+            result = jp.proceed(args);
+
+            <span class="hljs-comment">// 序列化查询结果</span>
+            String json = serialize(result);
+
+            <span class="hljs-comment">// 序列化结果放入缓存</span>
+            rt.opsForHash().put(modelType.getName(), key, json);
+        } <span class="hljs-keyword">else</span> {
+            <span class="hljs-comment">// 缓存命中</span>
+            <span class="hljs-keyword">if</span> (infoLog.isDebugEnabled()) {
+                infoLog.debug(<span class="hljs-string">"缓存命中, value = {}"</span>, value);
+            }
+
+            <span class="hljs-comment">// 得到被代理方法的返回值类型</span>
+            Class returnType = ((MethodSignature) jp.getSignature()).getReturnType();
+
+            <span class="hljs-comment">// 反序列化从缓存中拿到的json</span>
+            result = deserialize(value, returnType, modelType);
+
+            <span class="hljs-keyword">if</span> (infoLog.isDebugEnabled()) {
+                infoLog.debug(<span class="hljs-string">"反序列化结果 = {}"</span>, result);
+            }
+        }
+
+        <span class="hljs-keyword">return</span> result;
+    }
+
+    <span class="hljs-javadoc">/**
+     * 在方法调用前清除缓存，然后调用业务方法
+     *<span class="hljs-javadoctag"> @param</span> jp
+     *<span class="hljs-javadoctag"> @return</span>
+     *<span class="hljs-javadoctag"> @throws</span> Throwable
+     */</span>
+    <span class="hljs-annotation">@Around</span>(<span class="hljs-string">"execution(* com.fh.taolijie.dao.mapper.JobPostModelMapper.insert*(..))"</span> +
+            <span class="hljs-string">"|| execution(* com.fh.taolijie.dao.mapper.JobPostModelMapper.update*(..))"</span> +
+            <span class="hljs-string">"|| execution(* com.fh.taolijie.dao.mapper.JobPostModelMapper.delete*(..))"</span> +
+            <span class="hljs-string">"|| execution(* com.fh.taolijie.dao.mapper.JobPostModelMapper.increase*(..))"</span> +
+            <span class="hljs-string">"|| execution(* com.fh.taolijie.dao.mapper.JobPostModelMapper.decrease*(..))"</span> +
+            <span class="hljs-string">"|| execution(* com.fh.taolijie.dao.mapper.JobPostModelMapper.complaint(..))"</span> +
+            <span class="hljs-string">"|| execution(* com.fh.taolijie.dao.mapper.JobPostModelMapper.set*(..))"</span>)
+    <span class="hljs-keyword">public</span> Object <span class="hljs-title">evictCache</span>(ProceedingJoinPoint jp) <span class="hljs-keyword">throws</span> Throwable {
+
+        <span class="hljs-comment">// 得到被代理的方法</span>
+        Method me = ((MethodSignature) jp.getSignature()).getMethod();
+        <span class="hljs-comment">// 得到被代理的方法上的注解</span>
+        Class modelType = me.getAnnotation(RedisEvict.class).type();
+
+        <span class="hljs-keyword">if</span> (infoLog.isDebugEnabled()) {
+            infoLog.debug(<span class="hljs-string">"清空缓存:{}"</span>, modelType.getName());
+        }
+
+        <span class="hljs-comment">// 清除对应缓存</span>
+        rt.delete(modelType.getName());
+
+        <span class="hljs-keyword">return</span> jp.proceed(jp.getArgs());
+    }
+
+
+
+    <span class="hljs-javadoc">/**
+     * 根据类名、方法名和参数生成key
+     *<span class="hljs-javadoctag"> @param</span> clazzName
+     *<span class="hljs-javadoctag"> @param</span> methodName
+     *<span class="hljs-javadoctag"> @param</span> args 方法参数
+     *<span class="hljs-javadoctag"> @return</span>
+     */</span>
+    <span class="hljs-keyword">protected</span> String <span class="hljs-title">genKey</span>(String clazzName, String methodName, Object[] args) {
+        StringBuilder sb = <span class="hljs-keyword">new</span> StringBuilder(clazzName);
+        sb.append(Constants.DELIMITER);
+        sb.append(methodName);
+        sb.append(Constants.DELIMITER);
+
+        <span class="hljs-keyword">for</span> (Object obj : args) {
+            sb.append(obj.toString());
+            sb.append(Constants.DELIMITER);
+        }
+
+        <span class="hljs-keyword">return</span> sb.toString();
+    }
+
+    <span class="hljs-keyword">protected</span> String <span class="hljs-title">serialize</span>(Object target) {
+        <span class="hljs-keyword">return</span> JSON.toJSONString(target);
+    }
+
+    <span class="hljs-keyword">protected</span> Object <span class="hljs-title">deserialize</span>(String jsonString, Class clazz, Class modelType) {
+        <span class="hljs-comment">// 序列化结果应该是List对象</span>
+        <span class="hljs-keyword">if</span> (clazz.isAssignableFrom(List.class)) {
+            <span class="hljs-keyword">return</span> JSON.parseArray(jsonString, modelType);
+        }
+
+        <span class="hljs-comment">// 序列化结果是普通对象</span>
+        <span class="hljs-keyword">return</span> JSON.parseObject(jsonString, clazz);
+    }
+}</code></pre>
+
+<p>这样我们就完成了数据库查询缓存的实现。</p>
+
+
+
+<hr>
+
+<p><strong>UPDATE:</strong> <br><br>最好为Hash Set设置一个过期时间，这样即使缓存策略有误（导致读出脏数据），过期时间到了以后依然可以与数据库保持同步：</p>
+
+
+
+<p><pre class="prettyprint"><code class=" hljs java"><span class="hljs-comment">// 序列化结果放入缓存</span><br>            rt.execute(<span class="hljs-keyword">new</span> RedisCallback&lt;Object&gt;() {<br>                <span class="hljs-annotation">@Override</span><br>                <span class="hljs-keyword">public</span> Object <span class="hljs-title">doInRedis</span>(RedisConnection redisConn) <span class="hljs-keyword">throws</span> DataAccessException {<br>                    <span class="hljs-comment">// 配置文件中指定了这是一个String类型的连接</span><br>                    <span class="hljs-comment">// 所以这里向下强制转换一定是安全的</span><br>                    StringRedisConnection conn = (StringRedisConnection) redisConn;</code></pre></p>
+<pre><code>        &lt;span class=&quot;hljs-comment&quot;&gt;// 判断hash名是否存在&lt;/span&gt;
+        &lt;span class=&quot;hljs-comment&quot;&gt;// 如果不存在，创建该hash并设置过期时间&lt;/span&gt;
+        &lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; (&lt;span class=&quot;hljs-keyword&quot;&gt;false&lt;/span&gt; == conn.exists(hashName) ){
+            conn.hSet(hashName, key, json);
+            conn.expire(hashName, Constants.HASH_EXPIRE_TIME);
+        } &lt;span class=&quot;hljs-keyword&quot;&gt;else&lt;/span&gt; {
+            conn.hSet(hashName, key, json);
+        }
+
+        &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-keyword&quot;&gt;null&lt;/span&gt;;
+    }
+});&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</article>
+
+
+
+    <!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+       <!--PC和WAP自适应版-->
+<div id="SOHUCS" sid="Spring AOP + Redis缓存数据库查询">></div> 
+<script type="text/javascript"> 
+(function(){ 
+var appid = 'cyt6cGNhF'; 
+var conf = '74187cfd376140c9ac8040b651377990'; 
+var width = window.innerWidth || document.documentElement.clientWidth; 
+if (width < 960) { 
+window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+        <p class="copyright text-muted">
+          Theme By <a target="_blank" href="https://github.com/levblanc">Levblanc.</a>
+          Inspired By <a target="_blank" href="https://github.com/klugjo/hexo-theme-clean-blog">Clean Blog.</a>
+        <p class="copyright text-muted">
+          Powered By <a target="_blank" href="https://hexo.io/">Hexo.</a>
+        </p>
+		    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+        <span id="busuanzi_container_site_uv">本站访客数<span id="busuanzi_value_site_uv"></span>人次</span>
+        <span id="busuanzi_container_page_pv">本文总阅读量<span id="busuanzi_value_page_pv"></span>次</span>
+        <p class="copyright text-muted">
+        <a target="_blank" href="http://www.miitbeian.gov.cn/">工信部备案号：陇ICP备17003422号</a>
+        </p>
+        <script>
+          (function(){
+          var bp = document.createElement('script');
+          var curProtocol = window.location.protocol.split(':')[0];
+          if (curProtocol === 'https') {
+          bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+          }
+          else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+          }
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(bp, s);
+          })();
+        </script>
+        <a href="http://webscan.360.cn/index/checkwebsite/url/www.lzybloglz.cn" name="8fbeeff16bd9824b29e2757827e06098" >360网站安全检测平台</a>
+        <script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1262811628'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s22.cnzz.com/z_stat.php%3Fid%3D1262811628%26show%3Dpic' type='text/javascript'%3E%3C/script%3E"));</script>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+    <!-- After Footer Scripts -->
+<script src="/js/highlight.pack.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function(event) {
+    var codeBlocks = Array.prototype.slice.call(document.getElementsByTagName('pre'))
+    codeBlocks.forEach(function(block, index) {
+      hljs.highlightBlock(block);
+    });
+  });
+</script>
+
+  </body>
+</html>
+
