@@ -111,7 +111,7 @@
           <!-- Date -->
           <span class="date-time info">On
             <span class="date">2017-07-25</span>
-            <span class="time">10:10:12</span>
+            <span class="time">10:16:39</span>
           </span>
           
           <!--  Categories  -->
@@ -373,17 +373,8 @@ JobPostModel selectByPrimaryKey(Integer id);</code></pre>
 
 
 
-<p><pre class="prettyprint"><code class=" hljs java"><span class="hljs-comment">// 序列化结果放入缓存</span><br>            rt.execute(<span class="hljs-keyword">new</span> RedisCallback&lt;Object&gt;() {<br>                <span class="hljs-annotation">@Override</span><br>                <span class="hljs-keyword">public</span> Object <span class="hljs-title">doInRedis</span>(RedisConnection redisConn) <span class="hljs-keyword">throws</span> DataAccessException {<br>                    <span class="hljs-comment">// 配置文件中指定了这是一个String类型的连接</span><br>                    <span class="hljs-comment">// 所以这里向下强制转换一定是安全的</span><br>                    StringRedisConnection conn = (StringRedisConnection) redisConn;</code></pre></p>
-<pre><code>        &lt;span class=&quot;hljs-comment&quot;&gt;// 判断hash名是否存在&lt;/span&gt;
-        &lt;span class=&quot;hljs-comment&quot;&gt;// 如果不存在，创建该hash并设置过期时间&lt;/span&gt;
-        &lt;span class=&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; (&lt;span class=&quot;hljs-keyword&quot;&gt;false&lt;/span&gt; == conn.exists(hashName) ){
-            conn.hSet(hashName, key, json);
-            conn.expire(hashName, Constants.HASH_EXPIRE_TIME);
-        } &lt;span class=&quot;hljs-keyword&quot;&gt;else&lt;/span&gt; {
-            conn.hSet(hashName, key, json);
-        }
-
-        &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-keyword&quot;&gt;null&lt;/span&gt;;
+<p><pre class="prettyprint"><code class=" hljs java"><span class="hljs-comment">// 序列化结果放入缓存</span><br>            rt.execute(<span class="hljs-keyword">new</span> RedisCallback&lt;Object&gt;() {<br>                <span class="hljs-annotation">@Override</span><br>                <span class="hljs-keyword">public</span> Object <span class="hljs-title">doInRedis</span>(RedisConnection redisConn) <span class="hljs-keyword">throws</span> DataAccessException {<br>                    <span class="hljs-comment">// 配置文件中指定了这是一个String类型的连接</span><br>                    <span class="hljs-comment">// 所以这里向下强制转换一定是安全的</span><br>                    StringRedisConnection conn = (StringRedisConnection) redisConn;<br>                    <span class="hljs-comment">// 判断hash名是否存在</span><br>                    <span class="hljs-comment">// 如果不存在，创建该hash并设置过期时间</span><br>                    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">false</span> == conn.exists(hashName) ){<br>                        conn.hSet(hashName, key, json);<br>                        conn.expire(hashName, Constants.HASH_EXPIRE_TIME);<br>                    } <span class="hljs-keyword">else</span> {<br>                        conn.hSet(hashName, key, json);<br>                    }</code></pre></p>
+<pre><code>        &lt;span class=&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;hljs-keyword&quot;&gt;null&lt;/span&gt;;
     }
 });&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 </code></pre>
